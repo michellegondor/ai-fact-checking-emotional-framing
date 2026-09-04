@@ -30,7 +30,7 @@ Framing-induced changes remained below **1% across all emotional conditions**, s
 
 Providing evidence increased accuracy by approximately **2.2 percentage points across all framing conditions**.
 
-![Factual accuracy with and without explicit evidence](figure_2_accuracy_by_evidence.png)
+![Factual accuracy with and without explicit evidence](figure_2_accuracy.png)
 
 ### 3. Evidence did not significantly reduce framing sensitivity
 
@@ -42,7 +42,7 @@ The estimated difference in FCR between the no-evidence and evidence conditions 
 
 The confidence interval includes zero, providing no evidence that explicit evidence significantly reduced framing sensitivity.
 
-![Changes in Gemini predictions across emotional framing conditions](figure_3_prediction_changes.png)
+![Effect of explicit evidence on framing sensitivity](figure_3_primary_h2_effect.png)
 
 ## Statistical Analysis
 
