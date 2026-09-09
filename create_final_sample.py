@@ -1,10 +1,6 @@
 import pandas as pd
 
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
-
 INPUT_FILE = "data/FEVER/fever_experiment_v2.csv"
 
 OUTPUT_FILE = "data/FEVER/fever_final_sample.csv"
@@ -18,15 +14,7 @@ LABELS = [
 ]
 
 
-# ============================================================
-# 1. LOAD FROZEN DATASET
-# ============================================================
-
 df = pd.read_csv(INPUT_FILE)
-
-print("=" * 70)
-print("CREATING FINAL EXPERIMENT SAMPLE")
-print("=" * 70)
 
 print("\nSource dataset:")
 print(INPUT_FILE)
@@ -38,9 +26,6 @@ print("\nLabel counts:")
 print(df["label"].value_counts())
 
 
-# ============================================================
-# 2. BASIC VALIDATION
-# ============================================================
 
 required_columns = {
     "id",
@@ -82,10 +67,6 @@ if unexpected_labels:
     )
 
 
-# ============================================================
-# 3. SAMPLE 750 FROM EACH LABEL
-# ============================================================
-
 samples = []
 
 
@@ -117,10 +98,6 @@ final_sample = pd.concat(
 )
 
 
-# ============================================================
-# 4. SHUFFLE FINAL SAMPLE
-# ============================================================
-
 final_sample = (
     final_sample
     .sample(
@@ -130,10 +107,6 @@ final_sample = (
     .reset_index(drop=True)
 )
 
-
-# ============================================================
-# 5. FINAL VALIDATION
-# ============================================================
 
 expected_total = (
     SAMPLE_PER_LABEL
@@ -181,23 +154,11 @@ if final_sample["evidence_text"].isna().any():
     )
 
 
-# ============================================================
-# 6. SAVE FROZEN SAMPLE
-# ============================================================
-
 final_sample.to_csv(
     OUTPUT_FILE,
     index=False
 )
 
-
-# ============================================================
-# 7. REPORT
-# ============================================================
-
-print("\n" + "=" * 70)
-print("FINAL SAMPLE CREATED")
-print("=" * 70)
 
 print("\nFinal shape:")
 print(final_sample.shape)
@@ -237,11 +198,3 @@ print(RANDOM_SEED)
 
 print("\nSaved to:")
 print(OUTPUT_FILE)
-
-print("\nIMPORTANT:")
-print(
-    "This file is now the frozen primary "
-    "sample for the final experiment."
-)
-
-print("=" * 70)
