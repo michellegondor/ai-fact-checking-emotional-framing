@@ -4,9 +4,6 @@ from pathlib import Path
 import pandas as pd
 
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
 
 RESULT_FILE = Path(
     "data/FEVER/final_batch/batch_results.jsonl"
@@ -32,9 +29,6 @@ VALID_LABELS = {
 }
 
 
-# ============================================================
-# HELPER
-# ============================================================
 
 def extract_classification(response):
 
@@ -75,7 +69,6 @@ def extract_classification(response):
 
             seen_texts.append(text)
 
-            # Ignore explicit thinking parts.
             if part.get("thought") is True:
                 continue
 
@@ -132,14 +125,6 @@ def extract_classification(response):
     )
 
 
-# ============================================================
-# 1. LOAD METADATA
-# ============================================================
-
-print("=" * 70)
-print("PARSING FINAL RESULTS")
-print("=" * 70)
-
 
 metadata = pd.read_csv(
     METADATA_FILE
@@ -167,10 +152,6 @@ print(
     len(metadata)
 )
 
-
-# ============================================================
-# 2. PARSE ALL RESPONSES
-# ============================================================
 
 parsed_rows = []
 diagnostic_rows = []
@@ -301,10 +282,6 @@ with open(
             continue
 
 
-        # --------------------------------------------
-        # Finish reason
-        # --------------------------------------------
-
         candidates = response.get(
             "candidates",
             []
@@ -319,10 +296,6 @@ with open(
                 .get("finishReason")
             )
 
-
-        # --------------------------------------------
-        # Classification
-        # --------------------------------------------
 
         (
             prediction,
@@ -380,10 +353,6 @@ with open(
             )
 
 
-# ============================================================
-# 3. CREATE DATAFRAMES
-# ============================================================
-
 predictions = pd.DataFrame(
     parsed_rows
 )
@@ -416,9 +385,6 @@ if predictions[
     )
 
 
-# ============================================================
-# 4. KEY INTEGRITY
-# ============================================================
 
 metadata_keys = set(
     metadata[
@@ -469,9 +435,6 @@ if unexpected_keys:
     )
 
 
-# ============================================================
-# 5. VALID / MISSING COUNTS
-# ============================================================
 
 valid_count = (
     predictions[
@@ -500,12 +463,6 @@ print(
 )
 
 
-# We already diagnosed the batch and expect
-# exactly one technical missing response.
-#
-# This assertion protects us against silently
-# accepting additional parsing failures.
-
 if valid_count != 14999:
     raise ValueError(
         f"Expected 14999 valid classifications, "
@@ -519,10 +476,6 @@ if missing_count != 1:
         f"classification, found {missing_count}."
     )
 
-
-# ============================================================
-# 6. VERIFY THE KNOWN TECHNICAL MISSING RESPONSE
-# ============================================================
 
 missing_rows = predictions[
     predictions[
@@ -551,28 +504,12 @@ if missing_keys_found != expected_missing_keys:
     )
 
 
-print(
-    "\nKnown technical missing response:"
-)
-
-print(
-    "217251__absent__anger"
-)
-
-
-# ============================================================
-# 7. SAVE DIAGNOSTICS
-# ============================================================
 
 diagnostics.to_csv(
     DIAGNOSTICS_FILE,
     index=False
 )
 
-
-# ============================================================
-# 8. MERGE WITH METADATA
-# ============================================================
 
 results = metadata.merge(
     predictions,
@@ -590,13 +527,6 @@ if len(results) != EXPECTED_ROWS:
     )
 
 
-# ============================================================
-# 9. CORRECTNESS
-# ============================================================
-
-# Use pandas nullable Boolean type so the
-# missing model prediction remains missing
-# rather than being incorrectly counted False.
 
 results["correct"] = (
     results["prediction"]
@@ -609,10 +539,6 @@ results.loc[
     "correct"
 ] = pd.NA
 
-
-# ============================================================
-# 10. FINAL STRUCTURAL CHECKS
-# ============================================================
 
 print(
     "\nPrediction counts:"
@@ -676,19 +602,9 @@ if results[
     )
 
 
-print(
-    "\nEvery claim retains exactly "
-    "10 experimental rows."
-)
-
-
-# ============================================================
-# 11. DESCRIPTIVE ACCURACY
-# ============================================================
 
 print(
     "\nAccuracy by evidence condition "
-    "(missing response excluded):"
 )
 
 
@@ -709,23 +625,11 @@ print(
 )
 
 
-# ============================================================
-# 12. SAVE FINAL DATASET
-# ============================================================
-
 results.to_csv(
     OUTPUT_FILE,
     index=False
 )
 
-
-# ============================================================
-# 13. FINAL REPORT
-# ============================================================
-
-print("\n" + "=" * 70)
-print("FINAL RESULT PARSING PASSED")
-print("=" * 70)
 
 print(
     "\nExperimental rows:",
@@ -763,13 +667,3 @@ print(
 print(
     OUTPUT_FILE
 )
-
-print(
-    "\nDiagnostics saved to:"
-)
-
-print(
-    DIAGNOSTICS_FILE
-)
-
-print("=" * 70)
