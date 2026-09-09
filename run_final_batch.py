@@ -5,10 +5,6 @@ from google import genai
 from google.genai import types
 
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
-
 MODEL = "gemini-3.7-flash"
 
 INPUT_FILE = Path(
@@ -24,9 +20,6 @@ DISPLAY_NAME = (
 )
 
 
-# ============================================================
-# 1. BASIC LOCAL CHECKS
-# ============================================================
 
 if not INPUT_FILE.exists():
     raise FileNotFoundError(
@@ -74,27 +67,11 @@ if len(keys) != 15000:
     )
 
 
-print("=" * 70)
-print("FINAL BATCH SUBMISSION")
-print("=" * 70)
-
 print("\nLocal validation passed.")
 print("Requests:", line_count)
 print("Unique keys:", len(keys))
 
-
-# ============================================================
-# 2. CREATE GEMINI CLIENT
-# ============================================================
-
 client = genai.Client()
-
-
-# ============================================================
-# 3. UPLOAD JSONL FILE
-# ============================================================
-
-print("\nUploading batch input file...")
 
 
 uploaded_file = client.files.upload(
@@ -113,13 +90,6 @@ print(
     "Uploaded file:",
     uploaded_file.name
 )
-
-
-# ============================================================
-# 4. CREATE BATCH JOB
-# ============================================================
-
-print("\nSubmitting batch job...")
 
 
 batch_job = client.batches.create(
@@ -143,11 +113,6 @@ print(
     "Initial state:",
     batch_job.state.name
 )
-
-
-# ============================================================
-# 5. SAVE JOB INFORMATION LOCALLY
-# ============================================================
 
 job_info = {
     "model":
@@ -189,25 +154,4 @@ print(
 
 print(
     JOB_INFO_FILE
-)
-
-
-print("\n" + "=" * 70)
-
-print(
-    "SUBMISSION COMPLETE"
-)
-
-print("=" * 70)
-
-print(
-    "\nYou can close this program now."
-)
-
-print(
-    "The batch job runs on Google's servers."
-)
-
-print(
-    "\nDo NOT submit the job again."
 )
