@@ -4,9 +4,6 @@ import pandas as pd
 import numpy as np
 
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
 
 RESULTS_FILE = Path(
     "data/FEVER/final_batch/final_results.csv"
@@ -39,14 +36,6 @@ EVIDENCE_CONDITIONS = [
 ]
 
 
-# ============================================================
-# 1. LOAD FINAL DATA
-# ============================================================
-
-print("=" * 70)
-print("FINAL EXPERIMENT ANALYSIS")
-print("=" * 70)
-
 
 df = pd.read_csv(
     RESULTS_FILE
@@ -72,9 +61,6 @@ if df["id"].nunique() != 1500:
     )
 
 
-# ============================================================
-# 2. CHECK MISSING PREDICTIONS
-# ============================================================
 
 missing_predictions = (
     df["prediction"]
@@ -92,10 +78,6 @@ if missing_predictions != 1:
         "Expected exactly one known technical missing prediction."
     )
 
-
-# ============================================================
-# 3. CREATE NEUTRAL LOOKUP
-# ============================================================
 
 neutral = df[
     df["emotion"] == "neutral"
@@ -138,9 +120,6 @@ if neutral[
     )
 
 
-# ============================================================
-# 4. CREATE EMOTIONAL COMPARISON DATASET
-# ============================================================
 
 emotional = df[
     df["emotion"].isin(EMOTIONS)
@@ -168,9 +147,6 @@ if comparisons[
     )
 
 
-# ============================================================
-# 5. DEFINE VALID PAIRS AND FRAMING CHANGE
-# ============================================================
 
 comparisons[
     "valid_pair"
@@ -211,9 +187,7 @@ comparisons[
 ].astype("boolean")
 
 
-# ============================================================
-# 6. FCR BY EMOTION × EVIDENCE
-# ============================================================
+
 
 fcr_rows = []
 
@@ -287,9 +261,7 @@ fcr_table = pd.DataFrame(
 )
 
 
-print("\n" + "=" * 70)
 print("FRAMING CHANGE RATE BY EMOTION")
-print("=" * 70)
 
 
 for evidence_condition in EVIDENCE_CONDITIONS:
@@ -314,19 +286,6 @@ for evidence_condition in EVIDENCE_CONDITIONS:
             f"{row['fcr_percent']:.3f}%"
         )
 
-
-# ============================================================
-# 7. AGGREGATED FCR PER CLAIM
-# ============================================================
-
-# Important:
-# We calculate one sensitivity score per claim
-# and evidence condition:
-#
-# number of emotional framings that changed
-# divided by number of valid emotional comparisons.
-#
-# This preserves the claim as the unit of analysis.
 
 claim_fcr = (
     comparisons[
@@ -372,9 +331,8 @@ aggregate_fcr = (
 )
 
 
-print("\n" + "=" * 70)
 print("AGGREGATED CLAIM-LEVEL FCR")
-print("=" * 70)
+
 
 print(
     aggregate_fcr
@@ -425,10 +383,6 @@ print(
 )
 
 
-# ============================================================
-# 8. FCR BY GROUND-TRUTH LABEL
-# ============================================================
-
 label_fcr = (
     claim_fcr
     .groupby(
@@ -455,9 +409,8 @@ label_fcr[
 )
 
 
-print("\n" + "=" * 70)
 print("FCR BY GROUND-TRUTH LABEL")
-print("=" * 70)
+
 
 print(
     label_fcr.to_string(
@@ -466,9 +419,6 @@ print(
 )
 
 
-# ============================================================
-# 9. ACCURACY BY EVIDENCE × EMOTION
-# ============================================================
 
 accuracy_rows = []
 
@@ -557,9 +507,7 @@ accuracy_table = pd.DataFrame(
 )
 
 
-print("\n" + "=" * 70)
 print("ACCURACY BY CONDITION")
-print("=" * 70)
 
 
 for evidence_condition in EVIDENCE_CONDITIONS:
@@ -585,10 +533,6 @@ for evidence_condition in EVIDENCE_CONDITIONS:
         )
 
 
-# ============================================================
-# 10. SAVE TABLES
-# ============================================================
-
 fcr_table.to_csv(
     FCR_TABLE_FILE,
     index=False
@@ -607,11 +551,7 @@ accuracy_table.to_csv(
 )
 
 
-print("\n" + "=" * 70)
-print("ANALYSIS COMPLETE")
-print("=" * 70)
 
-print("\nSaved:")
 
 print(
     FCR_TABLE_FILE
@@ -625,21 +565,9 @@ print(
     ACCURACY_FILE
 )
 
-print("=" * 70)
-# ============================================================
-# 11. PRIMARY H2 INFERENCE
-# Complete-case paired analysis
-# ============================================================
 
-print("\n" + "=" * 70)
 print("PRIMARY H2: DOES EVIDENCE REDUCE FRAMING SENSITIVITY?")
-print("=" * 70)
 
-
-# ------------------------------------------------------------
-# Keep only claims with all 4 emotional comparisons
-# in BOTH evidence conditions.
-# ------------------------------------------------------------
 
 complete_counts = (
     comparisons[
@@ -672,10 +600,6 @@ if len(complete_ids) != 1499:
         "Expected exactly 1499 complete claims."
     )
 
-
-# ------------------------------------------------------------
-# Calculate one FCR score per claim and evidence condition
-# ------------------------------------------------------------
 
 complete_comparisons = comparisons[
     comparisons["id"].isin(
@@ -735,9 +659,6 @@ print(
 )
 
 
-# ============================================================
-# 12. 95% PAIRED BOOTSTRAP CONFIDENCE INTERVAL
-# ============================================================
 
 RANDOM_SEED = 42
 N_BOOTSTRAP = 10000
@@ -805,16 +726,6 @@ print(
 )
 
 
-# ============================================================
-# 13. PAIRED PERMUTATION TEST
-# ============================================================
-
-# Under H0, the labels "evidence present" and
-# "evidence absent" are exchangeable within each claim.
-#
-# Swapping the two conditions is equivalent to randomly
-# multiplying each paired difference by +1 or -1.
-
 N_PERMUTATIONS = 10000
 
 permutation_means = np.empty(
@@ -839,10 +750,6 @@ for i in range(
     )
 
 
-# Two-sided p-value.
-#
-# +1 correction prevents an estimated p-value of exactly zero.
-
 extreme_count = np.sum(
     np.abs(
         permutation_means
@@ -866,10 +773,6 @@ print(
     f"{p_value:.6f}"
 )
 
-
-# ============================================================
-# 14. DIRECTION OF CLAIM-LEVEL DIFFERENCES
-# ============================================================
 
 more_sensitive_without = int(
     (
@@ -908,16 +811,8 @@ print(
 )
 
 
-print("\n" + "=" * 70)
-print("PRIMARY H2 INFERENCE COMPLETE")
-print("=" * 70)
-# ============================================================
-# 15. H1: FCR CONFIDENCE INTERVALS
-# ============================================================
-
-print("\n" + "=" * 70)
 print("H1: FRAMING SENSITIVITY")
-print("=" * 70)
+
 
 N_BOOTSTRAP_H1 = 10000
 
@@ -1029,14 +924,8 @@ h1_table = pd.DataFrame(
 )
 
 
-# ============================================================
-# 16. H3: DO EMOTION TYPES DIFFER?
-# Repeated-measures permutation test
-# ============================================================
 
-print("\n" + "=" * 70)
 print("H3: DIFFERENCES BETWEEN EMOTION TYPES")
-print("=" * 70)
 
 
 N_PERMUTATIONS_H3 = 10000
@@ -1078,12 +967,6 @@ for evidence_condition in EVIDENCE_CONDITIONS:
         matrix.mean(axis=0)
     )
 
-
-    # Statistic:
-    # variance across the four emotion-specific FCRs.
-    #
-    # Under H0, emotion labels are exchangeable
-    # within each claim.
 
     observed_statistic = (
         np.var(
@@ -1183,9 +1066,6 @@ h3_table = pd.DataFrame(
 )
 
 
-# ============================================================
-# 17. SAVE H1 AND H3 RESULTS
-# ============================================================
 
 h1_table.to_csv(
     OUTPUT_DIR
@@ -1201,20 +1081,7 @@ h3_table.to_csv(
 )
 
 
-print("\n" + "=" * 70)
-print("H1 AND H3 ANALYSIS COMPLETE")
-print("=" * 70)
-
-# ============================================================
-# 18. H4: DOES SENSITIVITY DIFFER BY GROUND-TRUTH LABEL?
-# ============================================================
-
-print("\n" + "=" * 70)
 print("H4: FRAMING SENSITIVITY BY GROUND-TRUTH LABEL")
-print("=" * 70)
-
-
-# Use the same 1499 complete claims as the primary analysis.
 
 complete_claim_fcr = (
     complete_comparisons
@@ -1268,10 +1135,6 @@ for evidence_condition in EVIDENCE_CONDITIONS:
     )
 
 
-    # --------------------------------------------------------
-    # Bootstrap CI for SUPPORTS - REFUTES
-    # --------------------------------------------------------
-
     bootstrap_differences = np.empty(
         N_BOOTSTRAP_H4
     )
@@ -1309,9 +1172,6 @@ for evidence_condition in EVIDENCE_CONDITIONS:
     )
 
 
-    # --------------------------------------------------------
-    # Permutation test for label difference
-    # --------------------------------------------------------
 
     combined = np.concatenate(
         [supports, refutes]
@@ -1423,14 +1283,7 @@ h4_table = pd.DataFrame(
 )
 
 
-# ============================================================
-# 19. ACCURACY: EVIDENCE PRESENT VS ABSENT
-# ============================================================
-
-print("\n" + "=" * 70)
 print("SECONDARY ANALYSIS: ACCURACY EFFECT OF EVIDENCE")
-print("=" * 70)
-
 
 accuracy_inference_rows = []
 
@@ -1460,8 +1313,7 @@ for emotion in [
         emotion_data["label"]
     ).astype("boolean")
 
-    # Preserve the one technical missing response
-    # as missing rather than counting it as incorrect.
+   
     emotion_data.loc[
         emotion_data["prediction"].isna(),
         "correct"
@@ -1513,9 +1365,6 @@ for emotion in [
     )
 
 
-    # --------------------------------------------------------
-    # Paired bootstrap CI
-    # --------------------------------------------------------
 
     paired_differences = (
         present_correct
@@ -1561,11 +1410,6 @@ for emotion in [
     )
 
 
-    # --------------------------------------------------------
-    # Exact paired sign-flip permutation test
-    # via Monte Carlo
-    # --------------------------------------------------------
-
     rng_permutation = np.random.default_rng(
         42
     )
@@ -1607,10 +1451,6 @@ for emotion in [
         N_PERMUTATIONS_ACCURACY + 1
     )
 
-
-    # --------------------------------------------------------
-    # Discordant pairs
-    # --------------------------------------------------------
 
     evidence_helps = int(
         (
@@ -1710,10 +1550,6 @@ accuracy_inference_table = pd.DataFrame(
 )
 
 
-# ============================================================
-# 20. SAVE FINAL STATISTICAL TABLES
-# ============================================================
-
 h4_table.to_csv(
     OUTPUT_DIR
     / "h4_label_sensitivity.csv",
@@ -1727,7 +1563,3 @@ accuracy_inference_table.to_csv(
     index=False
 )
 
-
-print("\n" + "=" * 70)
-print("STATISTICAL ANALYSIS COMPLETE")
-print("=" * 70)
