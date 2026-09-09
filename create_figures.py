@@ -4,10 +4,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-# ============================================================
-# VISUAL STYLE
-# ============================================================
-
 COLOR_EVIDENCE = "#062D6D"
 COLOR_NO_EVIDENCE = "#E58A2B"
 
@@ -23,9 +19,6 @@ plt.rcParams.update({
     "axes.spines.right": False,
 })
 
-# ============================================================
-# 1. LOAD DATA
-# ============================================================
 
 RESULTS_DIR = Path("results")
 
@@ -34,9 +27,6 @@ fcr = pd.read_csv(
 )
 
 
-# ============================================================
-# 2. PREPARE DATA
-# ============================================================
 
 emotion_order = [
     "positive",
@@ -76,7 +66,6 @@ x_absent = [
 ]
 
 
-# Convert proportions to percentages
 present_fcr = (
     present["fcr"] * 100
 )
@@ -86,7 +75,6 @@ absent_fcr = (
 )
 
 
-# Error bars must be distances from the estimate
 present_yerr = [
     (
         present["fcr"]
@@ -114,9 +102,6 @@ absent_yerr = [
 ]
 
 
-# ============================================================
-# 3. CREATE FIGURE
-# ============================================================
 
 fig, ax = plt.subplots(
     figsize=(8, 5)
@@ -149,10 +134,6 @@ ax.errorbar(
     label="Evidence absent",
 )
 
-
-# ============================================================
-# 4. LABELS
-# ============================================================
 
 ax.set_xticks(x)
 
@@ -198,9 +179,6 @@ ax.grid(
 )
 
 
-# ============================================================
-# 5. SAVE
-# ============================================================
 
 plt.tight_layout()
 
@@ -225,21 +203,9 @@ plt.savefig(
     bbox_inches="tight",
 )
 
-print(
-    "Saved:",
-    png_path
-)
-
-print(
-    "Saved:",
-    pdf_path
-)
 
 plt.show()
 
-# ============================================================
-# FIGURE 2: ACCURACY BY FRAMING AND EVIDENCE CONDITION
-# ============================================================
 
 accuracy = pd.read_csv(
     RESULTS_DIR / "accuracy_inference.csv"
@@ -274,7 +240,6 @@ x_absent = [
 ]
 
 
-# Convert proportions to percentages
 accuracy_present = (
     accuracy["accuracy_present"] * 100
 )
@@ -283,10 +248,6 @@ accuracy_absent = (
     accuracy["accuracy_absent"] * 100
 )
 
-
-# ============================================================
-# CREATE FIGURE 2
-# ============================================================
 
 fig, ax = plt.subplots(
     figsize=(8, 5)
@@ -311,9 +272,6 @@ ax.scatter(
 )
 
 
-# Connect the paired evidence conditions
-# within each framing category.
-
 for i in range(len(x)):
 
     ax.plot(
@@ -330,11 +288,6 @@ for i in range(len(x)):
         alpha=0.7,
         zorder=1,
     )
-
-
-# ============================================================
-# LABELS
-# ============================================================
 
 ax.set_xticks(x)
 
@@ -376,18 +329,11 @@ ax.grid(
 )
 
 
-# Restricted range because all accuracy values
-# are between approximately 94% and 97%.
-
 ax.set_ylim(
     93.5,
     97.5,
 )
 
-
-# ============================================================
-# SAVE FIGURE 2
-# ============================================================
 
 plt.tight_layout()
 
@@ -412,35 +358,15 @@ plt.savefig(
     bbox_inches="tight",
 )
 
-print(
-    "Saved:",
-    png_path
-)
-
-print(
-    "Saved:",
-    pdf_path
-)
 
 plt.show()
 
-# ============================================================
-# FIGURE 3: PRIMARY H2 EFFECT
-# ============================================================
 
-# Primary paired effect from the confirmatory H2 analysis.
-# Unit: percentage points.
-#
-# Positive values mean framing sensitivity was higher
-# without evidence than with evidence.
 
 h2_effect = 0.117
 h2_ci_lower = -0.334
 h2_ci_upper = 0.567
 
-
-# Convert CI limits into distances from the estimate
-# for Matplotlib's errorbar function.
 
 h2_xerr = [
     [h2_effect - h2_ci_lower],
@@ -448,17 +374,10 @@ h2_xerr = [
 ]
 
 
-# ============================================================
-# CREATE FIGURE 3
-# ============================================================
-
 fig, ax = plt.subplots(
     figsize=(8, 3.6)
 )
 
-
-# Reference line:
-# zero means no difference between evidence conditions.
 
 ax.axvline(
     x=0,
@@ -468,8 +387,6 @@ ax.axvline(
     zorder=1,
 )
 
-
-# Primary effect estimate and 95% CI.
 
 ax.errorbar(
     h2_effect,
@@ -484,10 +401,6 @@ ax.errorbar(
     zorder=3,
 )
 
-
-# ============================================================
-# LABELS
-# ============================================================
 
 ax.set_title(
     "No Significant Reduction in Framing Sensitivity With Evidence",
@@ -519,10 +432,6 @@ ax.grid(
 )
 
 
-# ============================================================
-# ANNOTATION
-# ============================================================
-
 ax.text(
     h2_effect,
     0.20,
@@ -542,10 +451,6 @@ ax.text(
     fontsize=11,
 )
 
-
-# ============================================================
-# SAVE FIGURE 3
-# ============================================================
 
 plt.tight_layout()
 
@@ -568,16 +473,6 @@ plt.savefig(
 plt.savefig(
     pdf_path,
     bbox_inches="tight",
-)
-
-print(
-    "Saved:",
-    png_path
-)
-
-print(
-    "Saved:",
-    pdf_path
 )
 
 plt.show()
