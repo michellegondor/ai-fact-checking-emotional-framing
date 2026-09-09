@@ -3,20 +3,11 @@ import os
 import pandas as pd
 
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
 
 TRAIN_FILE = "data/FEVER/train.jsonl"
 WIKI_FOLDER = "data/FEVER/wiki-pages/wiki-pages"
 OUTPUT_FILE = "data/FEVER/fever_with_evidence.csv"
 
-
-# ============================================================
-# 1. LOAD FEVER WIKIPEDIA
-# ============================================================
-
-print("Loading FEVER Wikipedia pages...")
 
 wiki_lookup = {}
 
@@ -82,12 +73,6 @@ print(f"Wikipedia files loaded: {file_count}")
 print(f"Wikipedia pages loaded: {page_count:,}")
 
 
-# ============================================================
-# 2. LOAD FEVER TRAIN DATA
-# ============================================================
-
-print("\nLoading FEVER train data...")
-
 rows = []
 
 with open(
@@ -102,13 +87,6 @@ with open(
 
 print(f"Total FEVER rows: {len(rows):,}")
 
-
-# ============================================================
-# 3. EXTRACT ALL UNIQUE EVIDENCE
-# ============================================================
-
-print("\nExtracting evidence...")
-
 output_rows = []
 
 missing_complete_evidence = 0
@@ -119,24 +97,12 @@ for row in rows:
 
     label = row["label"]
 
-    # We deliberately exclude FEVER's NOT ENOUGH INFO examples.
     if label not in {"SUPPORTS", "REFUTES"}:
         continue
 
 
     evidence_sets = row.get("evidence", [])
 
-
-    # --------------------------------------------------------
-    # Collect every valid evidence reference.
-    #
-    # Each reference is represented as:
-    #
-    #     (page_id, sentence_id)
-    #
-    # A set is considered usable only if ALL of its referenced
-    # sentences can actually be found in the Wikipedia dump.
-    # --------------------------------------------------------
 
     valid_evidence_sets = []
 
@@ -210,23 +176,11 @@ for row in rows:
             )
 
 
-    # --------------------------------------------------------
-    # If we could not recover even one COMPLETE evidence set,
-    # exclude the row.
-    # --------------------------------------------------------
-
     if not valid_evidence_sets:
 
         missing_complete_evidence += 1
         continue
 
-
-    # --------------------------------------------------------
-    # Combine ALL unique evidence sentences from ALL complete
-    # evidence sets.
-    #
-    # Duplicate references are removed.
-    # --------------------------------------------------------
 
     unique_evidence = {}
 
@@ -246,13 +200,6 @@ for row in rows:
 
             unique_evidence[key] = sentence_text
 
-
-    # --------------------------------------------------------
-    # Sort evidence reproducibly.
-    #
-    # Within the same Wikipedia page, sentence 15 comes before
-    # sentence 16, etc.
-    # --------------------------------------------------------
 
     sorted_evidence = sorted(
         unique_evidence.items(),
@@ -322,16 +269,8 @@ for row in rows:
     kept_rows += 1
 
 
-# ============================================================
-# 4. SAVE RESULT
-# ============================================================
-
 df = pd.DataFrame(output_rows)
 
-
-print("\n" + "=" * 70)
-print("RESULT")
-print("=" * 70)
 
 print(f"\nRows kept: {kept_rows:,}")
 
