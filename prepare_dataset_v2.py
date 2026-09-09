@@ -1,10 +1,6 @@
 import pandas as pd
 
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
-
 INPUT_FILE = "data/FEVER/fever_with_evidence.csv"
 OUTPUT_FILE = "data/FEVER/fever_experiment_v2.csv"
 
@@ -15,16 +11,8 @@ MAX_EVIDENCE_SENTENCES = 6
 RANDOM_STATE = 42
 
 
-# ============================================================
-# 1. LOAD DATA
-# ============================================================
-
 df = pd.read_csv(INPUT_FILE)
 
-
-print("=" * 70)
-print("ORIGINAL DATA")
-print("=" * 70)
 
 print("\nShape:")
 print(df.shape)
@@ -33,9 +21,6 @@ print("\nLabels:")
 print(df["label"].value_counts())
 
 
-# ============================================================
-# 2. REMOVE CLAIMS WITH CONFLICTING LABELS
-# ============================================================
 
 label_counts = (
     df.groupby("claim")["label"]
@@ -58,9 +43,6 @@ df = df[
 ].copy()
 
 
-# ============================================================
-# 3. REMOVE DUPLICATE CLAIMS
-# ============================================================
 
 before_duplicates = len(df)
 
@@ -80,9 +62,6 @@ print(
 )
 
 
-# ============================================================
-# 4. REMOVE INVALID / EMPTY EVIDENCE
-# ============================================================
 
 before_evidence = len(df)
 
@@ -107,9 +86,6 @@ print(
 )
 
 
-# ============================================================
-# 5. LIMIT EVIDENCE LENGTH
-# ============================================================
 
 before_length_filter = len(df)
 
@@ -132,14 +108,6 @@ print(
 )
 
 
-# ============================================================
-# 6. CLEAN DATA SUMMARY
-# ============================================================
-
-print("\n" + "=" * 70)
-print("CLEAN DATA")
-print("=" * 70)
-
 print("\nShape:")
 print(df.shape)
 
@@ -153,10 +121,6 @@ print(
     .sort_index()
 )
 
-
-# ============================================================
-# 7. BALANCED SAMPLE
-# ============================================================
 
 supports = (
     df[df["label"] == "SUPPORTS"]
@@ -187,10 +151,6 @@ experiment = experiment.sample(
 ).reset_index(drop=True)
 
 
-# ============================================================
-# 8. KEEP FINAL COLUMNS
-# ============================================================
-
 experiment = experiment[
     [
         "id",
@@ -205,13 +165,6 @@ experiment = experiment[
 ]
 
 
-# ============================================================
-# 9. FINAL CHECKS
-# ============================================================
-
-print("\n" + "=" * 70)
-print("FINAL EXPERIMENT DATASET")
-print("=" * 70)
 
 print("\nShape:")
 print(experiment.shape)
@@ -242,10 +195,6 @@ print(
     experiment["claim"].nunique()
 )
 
-
-# ============================================================
-# 10. SAVE
-# ============================================================
 
 experiment.to_csv(
     OUTPUT_FILE,
