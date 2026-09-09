@@ -4,9 +4,6 @@ from pathlib import Path
 from google import genai
 
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
 
 JOB_INFO_FILE = Path(
     "data/FEVER/final_batch/batch_job.json"
@@ -17,9 +14,6 @@ RESULT_FILE = Path(
 )
 
 
-# ============================================================
-# 1. LOAD SAVED JOB INFORMATION
-# ============================================================
 
 if not JOB_INFO_FILE.exists():
     raise FileNotFoundError(
@@ -39,24 +33,9 @@ with open(
 job_name = job_info["batch_job_name"]
 
 
-print("=" * 70)
-print("FINAL BATCH STATUS")
-print("=" * 70)
-
-print("\nBatch job:")
-print(job_name)
-
-
-# ============================================================
-# 2. CONNECT TO GEMINI
-# ============================================================
-
 client = genai.Client()
 
 
-# ============================================================
-# 3. GET CURRENT JOB STATE
-# ============================================================
 
 batch_job = client.batches.get(
     name=job_name
@@ -70,9 +49,6 @@ print("\nCurrent state:")
 print(state)
 
 
-# ============================================================
-# 4. HANDLE NON-FINISHED STATES
-# ============================================================
 
 if state in {
     "JOB_STATE_PENDING",
@@ -90,9 +66,6 @@ if state in {
     raise SystemExit(0)
 
 
-# ============================================================
-# 5. HANDLE FAILED STATES
-# ============================================================
 
 if state == "JOB_STATE_FAILED":
 
@@ -121,11 +94,6 @@ if state == "JOB_STATE_EXPIRED":
 
     raise SystemExit(1)
 
-
-# ============================================================
-# 6. SUCCESS
-# ============================================================
-
 if state != "JOB_STATE_SUCCEEDED":
 
     raise RuntimeError(
@@ -137,10 +105,6 @@ print(
     "\nBatch completed successfully."
 )
 
-
-# ============================================================
-# 7. FIND RESULT FILE
-# ============================================================
 
 if not batch_job.dest:
     raise RuntimeError(
@@ -165,14 +129,6 @@ print("\nRemote result file:")
 print(result_file_name)
 
 
-# ============================================================
-# 8. DOWNLOAD RESULT FILE
-# ============================================================
-
-print(
-    "\nDownloading results..."
-)
-
 
 file_content = client.files.download(
     file=result_file_name
@@ -184,13 +140,6 @@ RESULT_FILE.write_bytes(
 )
 
 
-print("\nSaved to:")
-print(RESULT_FILE)
-
-
-# ============================================================
-# 9. BASIC RESULT VALIDATION
-# ============================================================
 
 line_count = 0
 keys = set()
@@ -220,10 +169,6 @@ with open(
         if obj.get("error") is not None:
             error_count += 1
 
-
-print("\n" + "=" * 70)
-print("DOWNLOADED RESULT CHECK")
-print("=" * 70)
 
 print(
     "\nJSONL responses:",
@@ -272,11 +217,5 @@ if (
 ):
 
     print(
-        "\nAll 15,000 batch responses "
-        "were received successfully."
+        "\nAll 15,000 batch responses were received successfully."
     )
-
-
-print("\n" + "=" * 70)
-print("CHECK COMPLETE")
-print("=" * 70)
