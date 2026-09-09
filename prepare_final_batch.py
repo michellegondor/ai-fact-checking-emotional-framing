@@ -4,10 +4,6 @@ from pathlib import Path
 import pandas as pd
 
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
-
 SAMPLE_FILE = "data/FEVER/fever_final_sample.csv"
 FRAMED_FILE = "data/FEVER/fever_framed_v2.csv"
 
@@ -31,10 +27,6 @@ EVIDENCE_CONDITIONS = [
     "absent",
 ]
 
-
-# ============================================================
-# FINAL FROZEN PROMPTS
-# ============================================================
 
 PROMPT_WITH_EVIDENCE = """
 Evaluate the factual claim based on the provided evidence.
@@ -69,28 +61,18 @@ Return only the classification.
 """.strip()
 
 
-# ============================================================
-# 1. CREATE OUTPUT DIRECTORY
-# ============================================================
-
 OUTPUT_DIR.mkdir(
     parents=True,
     exist_ok=True
 )
 
 
-# ============================================================
-# 2. LOAD FROZEN SAMPLE
-# ============================================================
 
 sample = pd.read_csv(
     SAMPLE_FILE
 )
 
 
-print("=" * 70)
-print("PREPARING FINAL BATCH")
-print("=" * 70)
 
 print("\nFrozen sample:")
 print(SAMPLE_FILE)
@@ -140,10 +122,6 @@ if label_counts.get("REFUTES", 0) != 750:
     )
 
 
-# ============================================================
-# 3. LOAD FROZEN FRAMINGS
-# ============================================================
-
 framed = pd.read_csv(
     FRAMED_FILE
 )
@@ -180,9 +158,6 @@ if len(framed) != expected_framed_rows:
     )
 
 
-# ============================================================
-# 4. VALIDATE FIVE CONDITIONS PER CLAIM
-# ============================================================
 
 rows_per_claim = (
     framed
@@ -220,9 +195,6 @@ if not emotion_sets.apply(
     )
 
 
-# ============================================================
-# 5. VALIDATE CLAIM TEXT
-# ============================================================
 
 sample_claims = (
     sample
@@ -256,15 +228,6 @@ for _, row in neutral_rows.iterrows():
         )
 
 
-print(
-    "\nNeutral claims match frozen "
-    "original claims exactly."
-)
-
-
-# ============================================================
-# 6. SORT DETERMINISTICALLY
-# ============================================================
 
 framed["emotion"] = pd.Categorical(
     framed["emotion"],
@@ -288,9 +251,6 @@ sample_lookup = (
 )
 
 
-# ============================================================
-# 7. BUILD REQUESTS + METADATA
-# ============================================================
 
 request_rows = []
 metadata_rows = []
@@ -360,10 +320,6 @@ for _, row in framed.iterrows():
             )
 
 
-        # JSONL request format.
-        #
-        # "key" lets us reconnect the response
-        # with the exact experimental condition.
         request = {
             "key": request_key,
 
@@ -456,10 +412,6 @@ for _, row in framed.iterrows():
         )
 
 
-# ============================================================
-# 8. GLOBAL VALIDATION
-# ============================================================
-
 expected_requests = (
     EXPECTED_CLAIMS
     * len(EMOTION_ORDER)
@@ -493,9 +445,6 @@ if len(metadata) != expected_requests:
     )
 
 
-# ============================================================
-# 9. UNIQUE REQUEST KEYS
-# ============================================================
 
 if metadata[
     "request_key"
@@ -516,14 +465,6 @@ if metadata[
     )
 
 
-print(
-    "All request keys are unique."
-)
-
-
-# ============================================================
-# 10. CONDITION COUNTS
-# ============================================================
 
 print(
     "\nEvidence-condition counts:"
@@ -586,10 +527,6 @@ if not (
     )
 
 
-# ============================================================
-# 11. CHECK 10 REQUESTS PER CLAIM
-# ============================================================
-
 requests_per_claim = (
     metadata
     .groupby("id")
@@ -606,16 +543,6 @@ if not (
         "10 requests."
     )
 
-
-print(
-    "\nEvery claim has exactly "
-    "10 experimental conditions."
-)
-
-
-# ============================================================
-# 12. WRITE JSONL
-# ============================================================
 
 with open(
     REQUESTS_FILE,
@@ -634,19 +561,11 @@ with open(
         )
 
 
-# ============================================================
-# 13. WRITE METADATA
-# ============================================================
 
 metadata.to_csv(
     METADATA_FILE,
     index=False
 )
-
-
-# ============================================================
-# 14. VERIFY WRITTEN JSONL
-# ============================================================
 
 line_count = 0
 written_keys = set()
@@ -686,14 +605,6 @@ if len(written_keys) != expected_requests:
         "are not unique."
     )
 
-
-# ============================================================
-# 15. FINAL REPORT
-# ============================================================
-
-print("\n" + "=" * 70)
-print("FINAL BATCH PREPARATION PASSED")
-print("=" * 70)
 
 print(
     "\nTotal claims:",
@@ -735,7 +646,3 @@ print(
 print(
     METADATA_FILE
 )
-
-print("\nNO API REQUESTS WERE SENT.")
-
-print("=" * 70)
